@@ -159,10 +159,10 @@ class TimeVAEEncoder(nn.Module):
         stem_layers.append(nn.ReLU())
         self.stem = nn.Sequential(*stem_layers)
 
-        self.conv_blocks = []
-        self.z_mean_layers = []
-        self.z_log_var_layers = []
-        self.top_down_layers = []
+        self.conv_blocks = nn.ModuleList()
+        self.z_mean_layers = nn.ModuleList()
+        self.z_log_var_layers = nn.ModuleList()
+        self.top_down_layers = nn.ModuleList()
 
         for i in range(hierarchical_levels):
             self.conv_blocks.append(self.init_conv_block(hidden_layer_sizes[i * self.hidden_layer_amount:(i + 1) * self.hidden_layer_amount + 1]))
