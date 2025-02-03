@@ -217,7 +217,7 @@ class TimeVAEEncoder(nn.Module):
             z_means.append(self.z_mean_layers[i](dense_input))
             z_log_vars.append(self.z_log_var_layers[i](dense_input))
             z_list.append(Sampling()([z_means[i], z_log_vars[i]]))
-
+        # Return the mean and log variance of the top level latent space
         return z_means[self.hierarchical_levels - 1], z_log_vars[self.hierarchical_levels - 1], z_list[self.hierarchical_levels - 1]
     
     def _get_last_dense_dim(self, seq_len, feat_dim, hidden_layer_sizes):
