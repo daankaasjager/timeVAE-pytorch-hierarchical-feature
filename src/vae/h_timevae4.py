@@ -145,13 +145,14 @@ class ResidualConnection(nn.Module):
     
 
 class TimeVAEEncoder(nn.Module):
-    def __init__(self, seq_len, feat_dim, hidden_layer_sizes, latent_dim, hierarchical_levels=3):
+    def __init__(self, seq_len, feat_dim, hidden_layer_sizes, hidden_layer_amount, latent_dim, hierarchical_levels=3):
         super(TimeVAEEncoder, self).__init__()
         print(seq_len, feat_dim, latent_dim)
         self.seq_len = seq_len
         self.feat_dim = feat_dim
         self.latent_dim = latent_dim
         self.hidden_layer_sizes = hidden_layer_sizes
+        self.hidden_layer_amount = hidden_layer_amount
         self.hierarchical_levels = hierarchical_levels
         stem_layers = nn.ModuleList()
         stem_layers.append(nn.Conv1d(feat_dim, hidden_layer_sizes[0], kernel_size=3, stride=2, padding=1))
@@ -162,9 +163,9 @@ class TimeVAEEncoder(nn.Module):
         self.z_mean_layers = []
         self.z_log_var_layers = []
         self.top_down_layers = []
-        applied_layers = [hidden_layer_sizes[0]]
+
         for i in range(hierarchical_levels):
-            self.conv_blocks.append(self.init_conv_block(hidden_layer_sizes[i * 3:(i + 1) * 3 + 1]))
+            self.conv_blocks.append(self.init_conv_block(hidden_layer_sizes[i * self.hidden_layer_amount:(i + 1) * self.hidden_layer_amount + 1]))
 
         self.encoder_last_dense_dims = self._get_last_dense_dim(seq_len, feat_dim, hidden_layer_sizes)
         print(self.encoder_last_dense_dims)
@@ -207,16 +208,12 @@ class TimeVAEEncoder(nn.Module):
         z_log_vars = []
         z_list = []
         for i in range(self.hierarchical_levels):
-            # print(conv_outputs[i].shape)
             dense_input = self.flatten(conv_outputs[i])
             if i != 0:
-                # print(z_list[i-1].shape)
-                # z = z_list[i-1].unsqueeze(-1)
+                # Combine latent space with convolutional output by expanding channels of latent space
+                # TODO: kan anders
                 z = z_list[i-1].expand(-1, -1)
-                # print(dense_input.shape)
-                # print(z.shape)
                 dense_input = torch.cat([dense_input, z], dim=1)
-                # print(dense_input.shape)
             z_means.append(self.z_mean_layers[i](dense_input))
             z_log_vars.append(self.z_log_var_layers[i](dense_input))
             z_list.append(Sampling()([z_means[i], z_log_vars[i]]))
@@ -282,13 +279,13 @@ class HTimeVAE(BaseVariationalAutoencoder):
         super(HTimeVAE, self).__init__(**kwargs)
 
         if hidden_layer_sizes is None:
-            hidden_layer_sizes = [15, 30, 60, 90, 120, 150, 180, 210, 230, 260]
+            hidden_layer_sizes = [15, 30, 60, 90, 120, 150, 180]
             # hidden_layer_sizes = [
             #     [30, 60, 90],
             #     [120, 150, 180],
             #     [210, 230, 260],
             # ]
-
+        self.hidden_layer_amount = 2
         self.hidden_layer_sizes = hidden_layer_sizes
         self.trend_poly = trend_poly
         self.custom_seas = custom_seas
@@ -304,7 +301,7 @@ class HTimeVAE(BaseVariationalAutoencoder):
                     nn.init.zeros_(layer.bias)
 
     def _get_encoder(self):
-        return TimeVAEEncoder(self.seq_len, self.feat_dim, self.hidden_layer_sizes, self.latent_dim)
+        return TimeVAEEncoder(self.seq_len, self.feat_dim, self.hidden_layer_sizes, self.hidden_layer_amount, self.latent_dim)
 
     def _get_decoder(self):
         return TimeVAEDecoder(self.seq_len, self.feat_dim, self.hidden_layer_sizes, self.latent_dim, self.trend_poly, self.custom_seas, self.use_residual_conn, self.encoder.encoder_last_dense_dims[-1])
