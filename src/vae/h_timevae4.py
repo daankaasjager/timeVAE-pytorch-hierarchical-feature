@@ -168,7 +168,7 @@ class TimeVAEEncoder(nn.Module):
             self.conv_blocks.append(self.init_conv_block(hidden_layer_sizes[i * self.hidden_layer_amount:(i + 1) * self.hidden_layer_amount + 1]))
 
         self.encoder_last_dense_dims = self._get_last_dense_dim(seq_len, feat_dim, hidden_layer_sizes)
-        print(self.encoder_last_dense_dims)
+
         for i in range(hierarchical_levels):
             input_dim = self.encoder_last_dense_dims[i]
             if i != 0:
@@ -199,10 +199,10 @@ class TimeVAEEncoder(nn.Module):
     def forward(self, x):
         x = x.transpose(1, 2)
         x = self.stem(x)
-        conv_outputs = []
+        conv_outputs = [None] * 3
         for i in range(self.hierarchical_levels):
             x = self.conv_blocks[i](x)
-            conv_outputs.append(x)
+            conv_outputs[self.hierarchical_levels - i - 1] = x
 
         z_means = []
         z_log_vars = []
@@ -285,7 +285,7 @@ class HTimeVAE(BaseVariationalAutoencoder):
             #     [120, 150, 180],
             #     [210, 230, 260],
             # ]
-        self.hidden_layer_amount = 2
+        self.layer_per_conv_block = 2
         self.hidden_layer_sizes = hidden_layer_sizes
         self.trend_poly = trend_poly
         self.custom_seas = custom_seas
@@ -301,7 +301,7 @@ class HTimeVAE(BaseVariationalAutoencoder):
                     nn.init.zeros_(layer.bias)
 
     def _get_encoder(self):
-        return TimeVAEEncoder(self.seq_len, self.feat_dim, self.hidden_layer_sizes, self.hidden_layer_amount, self.latent_dim)
+        return TimeVAEEncoder(self.seq_len, self.feat_dim, self.hidden_layer_sizes, self.layer_per_conv_block, self.latent_dim)
 
     def _get_decoder(self):
         return TimeVAEDecoder(self.seq_len, self.feat_dim, self.hidden_layer_sizes, self.latent_dim, self.trend_poly, self.custom_seas, self.use_residual_conn, self.encoder.encoder_last_dense_dims[-1])
