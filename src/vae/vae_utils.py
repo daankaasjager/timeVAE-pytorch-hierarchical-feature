@@ -8,6 +8,8 @@ from vae.vae_dense_model import VariationalAutoencoderDense as VAE_Dense
 from vae.vae_conv_model import VariationalAutoencoderConv as VAE_Conv
 from vae.timevae import TimeVAE
 
+from vae.h_timevae4 import HTimeVAE
+
 
 def set_seeds(seed: int = 111) -> None:
     """
@@ -63,6 +65,13 @@ def instantiate_vae_model(
         )
     elif vae_type == "timeVAE":
         vae = TimeVAE(
+            seq_len=sequence_length,
+            feat_dim=feature_dim,
+            batch_size=batch_size,
+            **kwargs,
+        )
+    elif vae_type == "h_timeVAE":
+        vae = HTimeVAE(
             seq_len=sequence_length,
             feat_dim=feature_dim,
             batch_size=batch_size,

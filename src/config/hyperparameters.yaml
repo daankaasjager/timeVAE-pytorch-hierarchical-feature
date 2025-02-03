@@ -1,3 +1,12 @@
+h_timeVAE:
+  latent_dim: 8
+  hidden_layer_sizes: null
+  reconstruction_wt: 3.0
+  batch_size: 16
+  use_residual_conn: false
+  trend_poly: 0
+  custom_seas: null
+
 timeVAE:
   latent_dim: 8
   hidden_layer_sizes:
