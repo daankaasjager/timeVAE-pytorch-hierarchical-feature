@@ -58,10 +58,10 @@ class BaseVariationalAutoencoder(nn.Module, ABC):
                 X = batch[0]
                 optimizer.zero_grad()
                 
-                z_mean, z_log_var, z = self.encoder(X)
-                reconstruction = self.decoder(z)
+                z_means, z_log_vars, z_list = self.encoder(X)
+                reconstruction = self.decoder(z_list)
                 
-                loss, recon_loss, kl = self.loss_function(X, reconstruction, z_mean, z_log_var)
+                loss, recon_loss, kl = self.loss_function(X, reconstruction, z_means, z_log_vars)
                 
                 # Normalize the loss by the batch size
                 loss = loss / X.size(0)
@@ -131,11 +131,19 @@ class BaseVariationalAutoencoder(nn.Module, ABC):
 
         return reconst_loss
 
-    def loss_function(self, X, X_recons, z_mean, z_log_var):
+    def loss_function(self, X, X_recons, z_means, z_log_vars):
         reconstruction_loss = self._get_reconstruction_loss(X, X_recons)
-        kl_loss = -0.5 * torch.sum(1 + z_log_var - z_mean.pow(2) - z_log_var.exp())
-        total_loss = self.reconstruction_wt * reconstruction_loss + kl_loss
-        return total_loss, reconstruction_loss, kl_loss
+        
+        kl_losses = [
+            -0.5 * torch.sum(1 + z_log_vars[i] - z_means[i].pow(2) - z_log_vars[i].exp())
+            for i in range(len(z_means))
+        ]
+        
+        total_kl_loss = sum(kl_losses)
+        total_loss = self.reconstruction_wt * reconstruction_loss + total_kl_loss
+
+        return total_loss, reconstruction_loss, total_kl_loss
+
 
     def save_weights(self, model_dir):
         if self.model_name is None:

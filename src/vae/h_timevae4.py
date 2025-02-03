@@ -218,7 +218,7 @@ class TimeVAEEncoder(nn.Module):
             z_log_vars.append(self.z_log_var_layers[i](dense_input))
             z_list.append(Sampling()([z_means[i], z_log_vars[i]]))
         # Return the mean and log variance of the top level latent space
-        return z_means[self.hierarchical_levels - 1], z_log_vars[self.hierarchical_levels - 1], z_list[self.hierarchical_levels - 1]
+        return z_means, z_log_vars, z_list
     
     def _get_last_dense_dim(self, seq_len, feat_dim, hidden_layer_sizes):
         dims = []
@@ -248,25 +248,25 @@ class TimeVAEDecoder(nn.Module):
             self.residual_conn = ResidualConnection(seq_len, feat_dim, hidden_layer_sizes, latent_dim, encoder_last_dense_dim)
 
     def forward(self, z):
-        outputs = self.level_model(z)
+        outputs = self.level_model(z[0])
         if self.trend_poly is not None and self.trend_poly > 0:
-            trend_vals = TrendLayer(self.seq_len, self.feat_dim, self.latent_dim, self.trend_poly)(z)
+            trend_vals = TrendLayer(self.seq_len, self.feat_dim, self.latent_dim, self.trend_poly)(z[0])
             outputs += trend_vals
 
         # custom seasons
         if self.custom_seas is not None and len(self.custom_seas) > 0:
-            cust_seas_vals = SeasonalLayer(self.seq_len, self.feat_dim, self.latent_dim, self.custom_seas)(z)
+            cust_seas_vals = SeasonalLayer(self.seq_len, self.feat_dim, self.latent_dim, self.custom_seas)(z[1])
             outputs += cust_seas_vals
 
         if self.use_residual_conn:
-            residuals = self.residual_conn(z)
+            residuals = self.residual_conn(z[2])
             outputs += residuals
 
         return outputs
 
 
 class HTimeVAE(BaseVariationalAutoencoder):
-    model_name = "TimeVAE"
+    model_name = "h_timeVAE"
 
     def __init__(
         self,
