@@ -307,7 +307,7 @@ class HTimeVAE(BaseVariationalAutoencoder):
         return TimeVAEEncoder(self.seq_len, self.feat_dim, self.hidden_layer_sizes, self.latent_dim)
 
     def _get_decoder(self):
-        return TimeVAEDecoder(self.seq_len, self.feat_dim, self.hidden_layer_sizes, self.latent_dim, self.trend_poly, self.custom_seas, self.use_residual_conn)
+        return TimeVAEDecoder(self.seq_len, self.feat_dim, self.hidden_layer_sizes, self.latent_dim, self.trend_poly, self.custom_seas, self.use_residual_conn, self.encoder.encoder_last_dense_dims[-1])
 
     def save(self, model_dir: str):
         os.makedirs(model_dir, exist_ok=True)

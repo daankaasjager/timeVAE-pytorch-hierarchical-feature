@@ -3,7 +3,7 @@ h_timeVAE:
   hidden_layer_sizes: null
   reconstruction_wt: 3.0
   batch_size: 16
-  use_residual_conn: false
+  use_residual_conn: true
   trend_poly: 0
   custom_seas: null
 
