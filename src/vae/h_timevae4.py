@@ -170,11 +170,12 @@ class HTimeVAEEncoder(nn.Module):
 
         # Determine the flattened dimensions after each conv block.
         self.encoder_last_dense_dims = self._get_last_dense_dim(seq_len, feat_dim, hidden_layer_sizes)
+        """
         print("encoder_last_dense_dims", self.encoder_last_dense_dims)
         self.encoder_last_dense_dims = list(reversed(self.encoder_last_dense_dims))
         print(
             "encoder_last_dense_dims after reverse",
-            self.encoder_last_dense_dims,)  
+            self.encoder_last_dense_dims,)  """
         
         # Instead of concatenating previous latent variables, add them (after a learned transform).
         # For the first level, use an identity.
@@ -231,7 +232,7 @@ class HTimeVAEEncoder(nn.Module):
         conv_outputs = [None] * self.hierarchical_levels
         for i in range(self.hierarchical_levels):
             x = self.conv_blocks[i](x)
-            conv_outputs[self.hierarchical_levels - i - 1] = x
+            conv_outputs[i] = x
 
         z_means = []
         z_log_vars = []
@@ -290,7 +291,7 @@ class HTimeVAEDecoder(nn.Module):
 
 
         if self.use_residual_conn:
-            residuals = self.residual_conn(z[3])
+            residuals = self.residual_conn(z[0])
             outputs += residuals
 
         return outputs
