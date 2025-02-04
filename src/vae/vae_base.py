@@ -132,15 +132,15 @@ class BaseVariationalAutoencoder(nn.Module, ABC):
         return reconst_loss
 
     def loss_function(self, X, X_recons, z_means, z_log_vars):
-        reconstruction_loss = self._get_reconstruction_loss(X, X_recons)
+        reconstruction_loss = self._get_reconstruction_loss(X, X_recons) * self.reconstruction_wt 
         
         kl_losses = [
             -0.5 * torch.sum(1 + z_log_vars[i] - z_means[i].pow(2) - z_log_vars[i].exp())
             for i in range(len(z_means))
         ]
         
-        total_kl_loss = sum(kl_losses)
-        total_loss = self.reconstruction_wt * reconstruction_loss + total_kl_loss
+        total_kl_loss = sum(kl_losses)/len(kl_losses)
+        total_loss = reconstruction_loss + total_kl_loss
 
         return total_loss, reconstruction_loss, total_kl_loss
 
