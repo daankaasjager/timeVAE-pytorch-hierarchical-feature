@@ -60,6 +60,7 @@ def plot_samples(
         fig.suptitle(samples1_name, fontsize=TITLE_FONT_SIZE)
 
     fig.tight_layout()
+    plt.savefig(f"{samples1_name}_samples.png")
     plt.show()
 
 

@@ -265,14 +265,14 @@ class HTimeVAEDecoder(nn.Module):
             self.residual_conn = ResidualConnection(seq_len, feat_dim, hidden_layer_sizes, latent_dim, encoder_last_dense_dim)
 
     def forward(self, z):
-        outputs = self.level_model(z[0])
+        outputs = self.level_model(z[3])
 
         if self.trend_layer is not None:
-            trend_vals = self.trend_layer(z[1].to(next(self.trend_layer.parameters()).device))
+            trend_vals = self.trend_layer(z[2].to(next(self.trend_layer.parameters()).device))
             outputs += trend_vals
 
         if self.seasonal_layer is not None:
-            seasonal_vals = self.seasonal_layer(z[2].to(next(self.seasonal_layer.parameters()).device))
+            seasonal_vals = self.seasonal_layer(z[1].to(next(self.seasonal_layer.parameters()).device))
             outputs += seasonal_vals
 
 
