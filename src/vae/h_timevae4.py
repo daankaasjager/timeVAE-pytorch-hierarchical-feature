@@ -157,7 +157,7 @@ class HTimeVAEEncoder(nn.Module):
 
         # Stem block.
         stem_layers = nn.ModuleList()
-        stem_layers.append(nn.Conv1d(feat_dim, hidden_layer_sizes[0], kernel_size=3, stride=2, padding=1))
+        stem_layers.append(nn.Conv1d(feat_dim, hidden_layer_sizes[0], kernel_size=3, stride=1, padding=1))
         stem_layers.append(nn.ReLU())
         self.stem = nn.Sequential(*stem_layers)
 
@@ -170,18 +170,18 @@ class HTimeVAEEncoder(nn.Module):
 
         # Determine the flattened dimensions after each conv block.
         self.encoder_last_dense_dims = self._get_last_dense_dim(seq_len, feat_dim)
-        
+        print(list(reversed(self.encoder_last_dense_dims)))
         # Instead of concatenating previous latent variables, add them (after a learned transform).
         # For the first level, use an identity.
         self.residual_transforms = nn.ModuleList()
         for i in range(hierarchical_levels):
-            if i == 0:
-                self.residual_transforms.append(nn.Identity())
-            else:
+            # if i == 0:
+            #     self.residual_transforms.append(nn.Identity())
+            # else:
                 # Map the previous latent (of dimension latent_dim) to match the flattened conv output.
-                self.residual_transforms.append(
-                    nn.Linear(self.latent_dim, self.encoder_last_dense_dims[i])
-                )
+            self.residual_transforms.append(
+                nn.Linear(self.latent_dim, self.encoder_last_dense_dims[i])
+            )
 
         # Create the z_mean and z_log_var layers for each level.
         self.z_mean_layers = nn.ModuleList()
@@ -224,11 +224,11 @@ class HTimeVAEEncoder(nn.Module):
         z_log_vars = []
         z_list = []
         # For each level, compute the latent distribution from the flattened conv output.
-        for i in range(self.hierarchical_levels):
+        for i in reversed(range(self.hierarchical_levels)):
             dense_input = self.flatten(conv_outputs[i])
-            if i != 0:
+            if i != self.hierarchical_levels - 1:
                 # Instead of concatenation, add a transformed version of the previous latent.
-                residual = self.residual_transforms[i](z_list[i - 1])
+                residual = self.residual_transforms[i](z_list[self.hierarchical_levels - i - 2])
                 dense_input = dense_input + residual
 
             z_mean = self.z_mean_layers[i](dense_input)
@@ -268,7 +268,7 @@ class HTimeVAEDecoder(nn.Module):
         outputs = self.level_model(z[3])
 
         if self.trend_layer is not None:
-            trend_vals = self.trend_layer(z[2].to(next(self.trend_layer.parameters()).device))
+            trend_vals = self.trend_layer(z[3].to(next(self.trend_layer.parameters()).device))
             outputs += trend_vals
 
         if self.seasonal_layer is not None:
@@ -293,7 +293,7 @@ class HTimeVAE(BaseVariationalAutoencoder):
         trend_poly=0,
         custom_seas=None,
         use_residual_conn=True,
-        layers_per_conv_block=None,
+        layers_per_conv_block=1,
         hierarchical_levels=4,
         **kwargs,
     ):

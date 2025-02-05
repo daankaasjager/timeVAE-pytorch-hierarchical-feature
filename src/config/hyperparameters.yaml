@@ -6,17 +6,13 @@ h_timeVAE:
     - 60
     - 90
     - 120
-    - 150
-    - 180
-    - 210
-    - 240
   reconstruction_wt: 3.0
   batch_size: 16
   use_residual_conn: true
   trend_poly: 3
   custom_seas:
     - [24, 1]
-  layers_per_conv_block: 2
+  layers_per_conv_block: 1
   hierarchical_levels: 4
 
 timeVAE:
