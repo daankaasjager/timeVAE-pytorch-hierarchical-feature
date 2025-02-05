@@ -272,12 +272,12 @@ class HTimeVAEDecoder(nn.Module):
             outputs += trend_vals
 
         if self.seasonal_layer is not None:
-            seasonal_vals = self.seasonal_layer(z[1].to(next(self.seasonal_layer.parameters()).device))
+            seasonal_vals = self.seasonal_layer(z[3].to(next(self.seasonal_layer.parameters()).device))
             outputs += seasonal_vals
 
 
         if self.use_residual_conn:
-            residuals = self.residual_conn(z[0])
+            residuals = self.residual_conn(z[3])
             outputs += residuals
 
         return outputs
@@ -325,10 +325,16 @@ class HTimeVAE(BaseVariationalAutoencoder):
 
     def get_prior_samples(self, num_samples):
         device = next(self.parameters()).device
-        Z = []
-        for _ in range(self.hierarchical_levels):
-            Z.append(torch.randn(num_samples, self.latent_dim).to(device))
-        samples = self.decoder(Z)
+        z_list = []
+        z_list.append(torch.randn(num_samples, self.latent_dim).to(device))
+        for i in reversed(range(self.hierarchical_levels - 1)):
+            prev_z = z_list[self.hierarchical_levels - i - 2]
+            z_input = self.encoder.residual_transforms[i](prev_z)
+            z_mean = self.encoder.z_mean_layers[i](z_input)
+            z_log_var = self.encoder.z_log_var_layers[i](z_input)
+            z_list.append(Sampling()([z_mean, z_log_var]))
+
+        samples = self.decoder(z_list)
         return samples.cpu().detach().numpy()
 
     def save(self, model_dir: str):
