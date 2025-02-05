@@ -80,7 +80,7 @@ def instantiate_vae_model(
     else:
         raise ValueError(
             f"Unrecognized model type [{vae_type}]. "
-            "Please choose from vae_dense, vae_conv, timeVAE."
+            "Please choose from vae_dense, vae_conv, timeVAE, h_timeVAE."
         )
 
     return vae
@@ -113,7 +113,7 @@ def save_vae_model(vae, dir_path: str) -> None:
     vae.save(dir_path)
 
 
-def load_vae_model(vae_type: str, dir_path: str) -> Union[VAE_Dense, VAE_Conv, TimeVAE]:
+def load_vae_model(vae_type: str, dir_path: str) -> Union[VAE_Dense, VAE_Conv, TimeVAE, HTimeVAE]:
     """
     Load a VAE model from the specified directory.
 
@@ -123,7 +123,7 @@ def load_vae_model(vae_type: str, dir_path: str) -> Union[VAE_Dense, VAE_Conv, T
         dir_path (str): The directory containing the model weights.
 
     Returns:
-        Union[VAE_Dense, VAE_Conv, TimeVAE]: The loaded VAE model.
+        Union[VAE_Dense, VAE_Conv, TimeVAE, HTimeVAE]: The loaded VAE model.
     """
     if vae_type == "vae_dense":
         vae = VAE_Dense.load(dir_path)
@@ -131,10 +131,13 @@ def load_vae_model(vae_type: str, dir_path: str) -> Union[VAE_Dense, VAE_Conv, T
         vae = VAE_Conv.load(dir_path)
     elif vae_type == "timeVAE":
         vae = TimeVAE.load(dir_path)
+    elif vae_type == "h_timeVAE":
+
+        vae = HTimeVAE.load(dir_path)
     else:
         raise ValueError(
             f"Unrecognized model type [{vae_type}]. "
-            "Please choose from vae_dense, vae_conv, timeVAE."
+            "Please choose from vae_dense, vae_conv, timeVAE, h_timeVAE."
         )
 
     return vae

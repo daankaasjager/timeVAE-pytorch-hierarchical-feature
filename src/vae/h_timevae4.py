@@ -145,14 +145,14 @@ class ResidualConnection(nn.Module):
     
 
 class HTimeVAEEncoder(nn.Module):
-    def __init__(self, seq_len, feat_dim, hidden_layer_sizes, hidden_layer_amount, latent_dim, hierarchical_levels = 4):
+    def __init__(self, seq_len, feat_dim, hidden_layer_sizes, layers_per_conv_block, latent_dim, hierarchical_levels):
         super(HTimeVAEEncoder, self).__init__()
         print(seq_len, feat_dim, latent_dim)
         self.seq_len = seq_len
         self.feat_dim = feat_dim
         self.latent_dim = latent_dim
         self.hidden_layer_sizes = hidden_layer_sizes
-        self.hidden_layer_amount = hidden_layer_amount
+        self.layers_per_conv_block = layers_per_conv_block
         self.hierarchical_levels = hierarchical_levels
 
         # Stem block.
@@ -163,19 +163,13 @@ class HTimeVAEEncoder(nn.Module):
 
         # Create the convolutional blocks.
         self.conv_blocks = nn.ModuleList()
-        for i in range(hierarchical_levels):
-            start = i * self.hidden_layer_amount
-            end = (i + 1) * self.hidden_layer_amount + 1
+        for i in range(self.hierarchical_levels):
+            start = i * self.layers_per_conv_block
+            end = (i + 1) * self.layers_per_conv_block + 1
             self.conv_blocks.append(self.init_conv_block(hidden_layer_sizes[start:end]))
 
         # Determine the flattened dimensions after each conv block.
-        self.encoder_last_dense_dims = self._get_last_dense_dim(seq_len, feat_dim, hidden_layer_sizes)
-        """
-        print("encoder_last_dense_dims", self.encoder_last_dense_dims)
-        self.encoder_last_dense_dims = list(reversed(self.encoder_last_dense_dims))
-        print(
-            "encoder_last_dense_dims after reverse",
-            self.encoder_last_dense_dims,)  """
+        self.encoder_last_dense_dims = self._get_last_dense_dim(seq_len, feat_dim)
         
         # Instead of concatenating previous latent variables, add them (after a learned transform).
         # For the first level, use an identity.
@@ -207,21 +201,13 @@ class HTimeVAEEncoder(nn.Module):
             block.append(nn.ReLU())
         return nn.Sequential(*block)
 
-    def compute_flattened_size(self, input_size, hidden_layer_sizes, kernel_size, stride, padding):
-        output_size = input_size  # Start with the input size
-        for i in range(1, len(hidden_layer_sizes)):  # Iterate through layers
-            output_size = (output_size - kernel_size + 2 * padding) // stride + 1
-        flattened_size = output_size * hidden_layer_sizes[-1]  # Multiply by the last layer's channels
-        return flattened_size
-
-    def _get_last_dense_dim(self, seq_len, feat_dim, hidden_layer_sizes):
+    def _get_last_dense_dim(self, seq_len, feat_dim):
         dims = []
         with torch.no_grad():
             x = torch.randn(1, feat_dim, seq_len)
             x = self.stem(x)
             for conv_block in self.conv_blocks:
-                for conv in conv_block:
-                    x = conv(x)
+                x = conv_block(x)
                 dims.append(x.numel())
         return dims
 
@@ -307,14 +293,17 @@ class HTimeVAE(BaseVariationalAutoencoder):
         trend_poly=0,
         custom_seas=None,
         use_residual_conn=True,
+        layers_per_conv_block=None,
+        hierarchical_levels=4,
         **kwargs,
     ):
         super(HTimeVAE, self).__init__(**kwargs)
 
         if hidden_layer_sizes is None:
             hidden_layer_sizes = [15, 30, 60, 90, 120, 150, 180, 210, 240]
-        self.layer_per_conv_block = 2
+        self.layers_per_conv_block = layers_per_conv_block
         self.hidden_layer_sizes = hidden_layer_sizes
+        self.hierarchical_levels = hierarchical_levels
         self.trend_poly = trend_poly
         self.custom_seas = custom_seas
         self.use_residual_conn = use_residual_conn
@@ -329,10 +318,18 @@ class HTimeVAE(BaseVariationalAutoencoder):
                     nn.init.zeros_(layer.bias)
 
     def _get_encoder(self):
-        return HTimeVAEEncoder(self.seq_len, self.feat_dim, self.hidden_layer_sizes, self.layer_per_conv_block, self.latent_dim)
+        return HTimeVAEEncoder(self.seq_len, self.feat_dim, self.hidden_layer_sizes, self.layers_per_conv_block, self.latent_dim, self.hierarchical_levels)
 
     def _get_decoder(self):
         return HTimeVAEDecoder(self.seq_len, self.feat_dim, self.hidden_layer_sizes, self.latent_dim, self.trend_poly, self.custom_seas, self.use_residual_conn, self.encoder.encoder_last_dense_dims[-1])
+
+    def get_prior_samples(self, num_samples):
+        device = next(self.parameters()).device
+        Z = []
+        for _ in range(self.hierarchical_levels):
+            Z.append(torch.randn(num_samples, self.latent_dim).to(device))
+        samples = self.decoder(Z)
+        return samples.cpu().detach().numpy()
 
     def save(self, model_dir: str):
         os.makedirs(model_dir, exist_ok=True)
