@@ -12,8 +12,8 @@ from data_utils import (
     save_scaler,
     save_data,
 )
-from metrics.PT_discriminative_metrics import discriminative_score_metrics
-from metrics.predictive_metrics import predictive_score_metrics
+from metrics.discriminative_metrics_new import discriminative_score_metrics
+from metrics.predictive_metrics_new import predictive_score_metrics
 from vae.vae_utils import (
     instantiate_vae_model,
     train_vae,
@@ -102,10 +102,10 @@ def run_vae_pipeline(dataset_name: str, vae_type: str):
         max_samples=2000,
     )
 
-    # disc_score = discriminative_score_metrics(scaled_train_data, prior_samples)
-    # print(f"Discriminative Score: {disc_score:.4f}")
-    # pred_score = predictive_score_metrics(scaled_train_data, prior_samples)
-    # print(f"Predictive Score: {pred_score}")
+    disc_score = discriminative_score_metrics(scaled_train_data, prior_samples)
+    print(f"Discriminative Score: {disc_score:.4f}")
+    pred_score = predictive_score_metrics(scaled_train_data, prior_samples)
+    print(f"Predictive Score: {pred_score}")
 
     # inverse transformer samples to original scale and save to dir
     inverse_scaled_prior_samples = inverse_transform_data(prior_samples, scaler)

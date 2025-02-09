@@ -12,8 +12,8 @@ from data_utils import (
     save_scaler,
     save_data,
 )
-from metrics.discriminative_metrics import discriminative_score_metrics
-from metrics.predictive_metrics import predictive_score_metrics
+from metrics.discriminative_metrics_new import discriminative_score_metrics
+from metrics.predictive_metrics_new import predictive_score_metrics
 from vae.vae_utils import (
     instantiate_vae_model,
     train_vae,
@@ -108,19 +108,20 @@ def run_vae_pipeline(dataset_name: str, vae_type: str, n_score_runs: int, n_epoc
 
 
 if __name__ == "__main__":
-    n_runs = 3
-    n_score_runs = 3
-    n_epochs = 1000
-    dataset_percentage = 100
+    n_runs = 1
+    n_score_runs = 2
+    n_epochs = 5
+    dataset_percentage = 2
     # check `/data/` for available datasets
-    # datasets = [f"air_subsampled_train_perc_{dataset_percentage}"]
-    datasets = [f"air_subsampled_train_perc_{dataset_percentage}",
-                f"energy_subsampled_train_perc_{dataset_percentage}",
-                f"sine_subsampled_train_perc_{dataset_percentage},"
-                f"stockv_subsampled_train_perc_{dataset_percentage}"]
+    datasets = [f"sine_subsampled_train_perc_{dataset_percentage}"]
+    # datasets = [f"air_subsampled_train_perc_{dataset_percentage}",
+    #             f"energy_subsampled_train_perc_{dataset_percentage}",
+    #             f"sine_subsampled_train_perc_{dataset_percentage},"
+    #             f"stockv_subsampled_train_perc_{dataset_percentage}"]
 
     # models: vae_dense, vae_conv, timeVAE
     model_name = "timeVAE"
+
     final_disc_scores = []
     final_pred_scores = []
     for dataset_name in datasets:
@@ -144,3 +145,8 @@ if __name__ == "__main__":
         print(f"Dataset: {datasets[i]}")
         print(f"Discriminative: {final_disc_scores[i]}")
         print(f"Predictive: {final_pred_scores[i]}")
+
+
+
+# Discriminative: (0.4444444444444445, 0.011340230290662867)
+# Predictive: (0.24686216763963065, 0.0073814562312611255)

@@ -40,6 +40,7 @@ class BaseVariationalAutoencoder(nn.Module, ABC):
 
     def fit_on_data(self, train_data, max_epochs=1000, verbose=0):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        print(f"Device: {device}")
         self.to(device)
         
         train_tensor = torch.FloatTensor(train_data).to(device)
