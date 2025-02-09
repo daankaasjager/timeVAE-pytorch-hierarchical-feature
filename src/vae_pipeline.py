@@ -12,8 +12,8 @@ from data_utils import (
     save_scaler,
     save_data,
 )
-from metrics.discriminative_metrics_new import discriminative_score_metrics
-from metrics.predictive_metrics_new import predictive_score_metrics
+from metrics.pt_discriminative_metrics import discriminative_score_metrics
+from metrics.pt_predictive_metrics import predictive_score_metrics
 from vae.vae_utils import (
     instantiate_vae_model,
     train_vae,
@@ -57,7 +57,7 @@ def run_vae_pipeline(dataset_name: str, vae_type: str):
     train_vae(
         vae=vae_model,
         train_data=scaled_train_data,
-        max_epochs=2,
+        max_epochs=500,
         verbose=1,
     )
 

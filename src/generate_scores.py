@@ -12,8 +12,8 @@ from data_utils import (
     save_scaler,
     save_data,
 )
-from metrics.discriminative_metrics_new import discriminative_score_metrics
-from metrics.predictive_metrics_new import predictive_score_metrics
+from metrics.pt_discriminative_metrics import discriminative_score_metrics
+from metrics.pt_predictive_metrics import predictive_score_metrics
 from vae.vae_utils import (
     instantiate_vae_model,
     train_vae,
