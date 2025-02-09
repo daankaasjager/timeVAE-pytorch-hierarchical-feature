@@ -13,6 +13,6 @@ module load Python/3.11.5-GCCcore-13.2.0
 
 source $HOME/venvs/udl/bin/activate
 
-python3 src/generate_results.py
+python3 src/generate_scores.py
 
 deactivate
