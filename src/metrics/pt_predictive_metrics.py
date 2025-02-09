@@ -50,8 +50,8 @@ def predictive_score_metrics(ori_data, generated_data):
     predictor.train()
     for itt in range(iterations):
         idx = np.random.permutation(len(generated_data))[:batch_size]
-        X_mb = torch.tensor([generated_data[i][:-1, :(dim - 1)] for i in idx], dtype=torch.float32).to(device)
-        Y_mb = torch.tensor([generated_data[i][1:, (dim - 1)].reshape(-1, 1) for i in idx], dtype=torch.float32).to(
+        X_mb = torch.tensor(np.array([generated_data[i][:-1, :(dim - 1)] for i in idx]), dtype=torch.float32).to(device)
+        Y_mb = torch.tensor(np.array([generated_data[i][1:, (dim - 1)].reshape(-1, 1) for i in idx]), dtype=torch.float32).to(
             device)
 
         optimizer.zero_grad()
