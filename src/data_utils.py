@@ -58,7 +58,7 @@ def get_npz_data(input_file: str) -> np.ndarray:
 
 def split_data(
     data: np.ndarray, valid_perc: float, shuffle: bool = True, seed: int = 123
-) -> tuple[np.ndarray, np.ndarray]:
+):
     """
     Split the data into training and validation sets.
 

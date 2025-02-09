@@ -9,6 +9,7 @@ OUTPUTS_DIR = os.path.join(ROOT_DIR, "outputs")
 GEN_DATA_DIR = os.path.join(OUTPUTS_DIR, "gen_data")
 MODELS_DIR = os.path.join(OUTPUTS_DIR, "models")
 TSNE_DIR = os.path.join(OUTPUTS_DIR, "tsne")
+SCORES_DIR = os.path.join(OUTPUTS_DIR, "scores")
 
 SRC_DIR = os.path.join(ROOT_DIR, "src")
 

@@ -121,6 +121,7 @@ def visualize_and_save_tsne(
     scenario_name: str,
     save_dir: str,
     max_samples: int = 1000,
+    show_image: bool = True,
 ) -> None:
     """
     Visualize the t-SNE of two sets of samples and save to file.
@@ -135,6 +136,7 @@ def visualize_and_save_tsne(
         save_dir (str): Dir path to which to save the file.
         max_samples (int): Maximum number of samples to use in the plot. Samples should
                            be limited because t-SNE is O(n^2).
+        show_image (bool): Whether to show the image of the t-SNE.
     """
     if samples1.shape != samples2.shape:
         raise ValueError(
@@ -187,5 +189,7 @@ def visualize_and_save_tsne(
     # Save the plot to a file
     os.makedirs(save_dir, exist_ok=True)
     plt.savefig(os.path.join(save_dir, f"{scenario_name}.png"))
-
-    plt.show()
+    if show_image:
+        plt.show()
+    else:
+        plt.clf()

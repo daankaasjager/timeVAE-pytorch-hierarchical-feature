@@ -8,7 +8,7 @@ from vae.vae_dense_model import VariationalAutoencoderDense as VAE_Dense
 from vae.vae_conv_model import VariationalAutoencoderConv as VAE_Conv
 from vae.timevae import TimeVAE
 
-from vae.h_timevae4 import HTimeVAE
+from vae.h_timevae import HTimeVAE
 
 
 def set_seeds(seed: int = 111) -> None:
@@ -113,7 +113,7 @@ def save_vae_model(vae, dir_path: str) -> None:
     vae.save(dir_path)
 
 
-def load_vae_model(vae_type: str, dir_path: str) -> Union[VAE_Dense, VAE_Conv, TimeVAE, HTimeVAE]:
+def load_vae_model(vae_type: str, dir_path: str, hyperparameters) -> Union[VAE_Dense, VAE_Conv, TimeVAE, HTimeVAE]:
     """
     Load a VAE model from the specified directory.
 
@@ -121,6 +121,7 @@ def load_vae_model(vae_type: str, dir_path: str) -> Union[VAE_Dense, VAE_Conv, T
         vae_type (str): The type of VAE model to load.
                         One of ('vae_dense', 'vae_conv', 'timeVAE').
         dir_path (str): The directory containing the model weights.
+        hyperparameters: the hyperparameters of the VAE model.
 
     Returns:
         Union[VAE_Dense, VAE_Conv, TimeVAE, HTimeVAE]: The loaded VAE model.
@@ -132,7 +133,6 @@ def load_vae_model(vae_type: str, dir_path: str) -> Union[VAE_Dense, VAE_Conv, T
     elif vae_type == "timeVAE":
         vae = TimeVAE.load(dir_path)
     elif vae_type == "h_timeVAE":
-
         vae = HTimeVAE.load(dir_path)
     else:
         raise ValueError(

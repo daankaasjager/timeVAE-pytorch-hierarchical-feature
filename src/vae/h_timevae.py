@@ -147,7 +147,6 @@ class ResidualConnection(nn.Module):
 class HTimeVAEEncoder(nn.Module):
     def __init__(self, seq_len, feat_dim, hidden_layer_sizes, layers_per_conv_block, latent_dim, hierarchical_levels):
         super(HTimeVAEEncoder, self).__init__()
-        print(seq_len, feat_dim, latent_dim)
         self.seq_len = seq_len
         self.feat_dim = feat_dim
         self.latent_dim = latent_dim
@@ -170,7 +169,6 @@ class HTimeVAEEncoder(nn.Module):
 
         # Determine the flattened dimensions after each conv block.
         self.encoder_last_dense_dims = self._get_last_dense_dim(seq_len, feat_dim)
-        print(list(reversed(self.encoder_last_dense_dims)))
         # Instead of concatenating previous latent variables, add them (after a learned transform).
         # For the first level, use an identity.
         self.residual_transforms = nn.ModuleList()
@@ -293,8 +291,8 @@ class HTimeVAE(BaseVariationalAutoencoder):
         trend_poly=0,
         custom_seas=None,
         use_residual_conn=True,
-        layers_per_conv_block=1,
-        hierarchical_levels=4,
+        layers_per_conv_block=None,
+        hierarchical_levels=None,
         **kwargs,
     ):
         super(HTimeVAE, self).__init__(**kwargs)
@@ -353,6 +351,8 @@ class HTimeVAE(BaseVariationalAutoencoder):
             "trend_poly": self.trend_poly,
             "custom_seas": self.custom_seas,
             "use_residual_conn": self.use_residual_conn,
+            "layers_per_conv_block": self.layers_per_conv_block,
+            "hierarchical_levels": self.hierarchical_levels,
         }
         params_file = os.path.join(model_dir, f"{self.model_name}_parameters.pkl")
         joblib.dump(dict_params, params_file)

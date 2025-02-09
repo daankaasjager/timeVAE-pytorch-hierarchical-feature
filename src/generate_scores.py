@@ -12,7 +12,7 @@ from data_utils import (
     save_scaler,
     save_data,
 )
-from metrics.PT_discriminative_metrics import discriminative_score_metrics
+from metrics.discriminative_metrics import discriminative_score_metrics
 from metrics.predictive_metrics import predictive_score_metrics
 from vae.vae_utils import (
     instantiate_vae_model,
@@ -22,10 +22,10 @@ from vae.vae_utils import (
     get_prior_samples,
     load_vae_model,
 )
-from visualize import plot_samples, plot_latent_space_samples, visualize_and_save_tsne
+from visualize import plot_latent_space_samples, visualize_and_save_tsne
 
 
-def run_vae_pipeline(dataset_name: str, vae_type: str):
+def run_vae_pipeline(dataset_name: str, vae_type: str, n_score_runs: int, n_epochs: int):
     # ----------------------------------------------------------------------------------
     # Load data, perform train/valid split, scale data
 
@@ -57,8 +57,8 @@ def run_vae_pipeline(dataset_name: str, vae_type: str):
     train_vae(
         vae=vae_model,
         train_data=scaled_train_data,
-        max_epochs=2,
-        verbose=1,
+        max_epochs=n_epochs,
+        verbose=0,
     )
 
     # ----------------------------------------------------------------------------------
@@ -69,27 +69,10 @@ def run_vae_pipeline(dataset_name: str, vae_type: str):
     # Save vae
     save_vae_model(vae=vae_model, dir_path=model_save_dir)
 
-    # ----------------------------------------------------------------------------------
-    # Visualize posterior samples
-    x_decoded = get_posterior_samples(vae_model, scaled_train_data)
-    plot_samples(
-        samples1=scaled_train_data,
-        samples1_name="Original Train",
-        samples2=x_decoded,
-        samples2_name="Reconstructed Train",
-        num_samples=5,
-    )
-    # ----------------------------------------------------------------------------------
     # Generate prior samples, visualize and save them
 
     # Generate prior samples
     prior_samples = get_prior_samples(vae_model, num_samples=train_data.shape[0])
-    # Plot prior samples
-    plot_samples(
-        samples1=prior_samples,
-        samples1_name="Prior Samples",
-        num_samples=5,
-    )
 
     # visualize t-sne of original and prior samples
     visualize_and_save_tsne(
@@ -100,12 +83,17 @@ def run_vae_pipeline(dataset_name: str, vae_type: str):
         scenario_name=f"Model-{vae_type} Dataset-{dataset_name}",
         save_dir=os.path.join(paths.TSNE_DIR, dataset_name),
         max_samples=2000,
+        show_image=False,
     )
 
-    # disc_score = discriminative_score_metrics(scaled_train_data, prior_samples)
-    # print(f"Discriminative Score: {disc_score:.4f}")
-    # pred_score = predictive_score_metrics(scaled_train_data, prior_samples)
-    # print(f"Predictive Score: {pred_score}")
+    disc_scores = []
+    pred_scores = []
+    for score_run in range(n_score_runs):
+        disc_scores.append(discriminative_score_metrics(scaled_train_data, prior_samples))
+        pred_scores.append(predictive_score_metrics(scaled_train_data, prior_samples))
+
+    print(f"Discriminative Score: {np.mean(disc_scores):.4f}")
+    print(f"Predictive Score: {np.mean(pred_scores):.4f}")
 
     # inverse transformer samples to original scale and save to dir
     inverse_scaled_prior_samples = inverse_transform_data(prior_samples, scaler)
@@ -116,31 +104,43 @@ def run_vae_pipeline(dataset_name: str, vae_type: str):
             f"{vae_type}_{dataset_name}_prior_samples.npz",
         ),
     )
-
-    # ----------------------------------------------------------------------------------
-    # If latent_dim == 2, plot latent space
-    if hyperparameters["latent_dim"] == 2:
-        plot_latent_space_samples(vae=vae_model, n=8, figsize=(15, 15))
-
-    # ----------------------------------------------------------------------------------
-    # later.... load model
-    loaded_model = load_vae_model(vae_type, model_save_dir, hyperparameters).to(next(vae_model.parameters()).device)
-
-    # Verify that loaded model produces same posterior samples
-    new_x_decoded = loaded_model.predict(scaled_train_data)
-    print(
-        "Preds from orig and loaded models equal: ",
-        np.allclose(x_decoded, new_x_decoded, atol=1e-5),
-    )
-
-    # ----------------------------------------------------------------------------------
+    return disc_scores, pred_scores
 
 
 if __name__ == "__main__":
+    n_runs = 3
+    n_score_runs = 3
+    n_epochs = 1000
+    dataset_percentage = 100
     # check `/data/` for available datasets
-    dataset = "sine_subsampled_train_perc_2"
+    # datasets = [f"air_subsampled_train_perc_{dataset_percentage}"]
+    datasets = [f"air_subsampled_train_perc_{dataset_percentage}",
+                f"energy_subsampled_train_perc_{dataset_percentage}",
+                f"sine_subsampled_train_perc_{dataset_percentage},"
+                f"stockv_subsampled_train_perc_{dataset_percentage}"]
 
     # models: vae_dense, vae_conv, timeVAE
-    model_name = "h_timeVAE"
+    model_name = "timeVAE"
+    final_disc_scores = []
+    final_pred_scores = []
+    for dataset_name in datasets:
+        disc_scores = []
+        pred_scores = []
+        for run in range(n_runs):
+            print(f"Run {run+1}/{n_runs}, dataset {dataset_name}", flush=True)
+            curr_disc_scores, curr_pred_scores = run_vae_pipeline(dataset_name, model_name, n_score_runs, n_epochs)
+            disc_scores += curr_disc_scores
+            pred_scores += curr_pred_scores
+        print(f"Final Discriminative Score: {np.mean(disc_scores):.4f} ({np.std(disc_scores):.4f})", flush=True)
+        print(f"Final Predictive Score: {np.mean(pred_scores):.4f} ({np.std(pred_scores):.4f})", flush=True)
+        path = os.path.join(paths.SCORES_DIR, dataset_name, model_name)
+        os.makedirs(path, exist_ok=True)
+        np.save(os.path.join(path, "disc_scores.npy"), disc_scores)
+        np.save(os.path.join(path, "pred_scores.npy"), pred_scores)
+        final_disc_scores.append((np.mean(disc_scores), np.std(disc_scores)))
+        final_pred_scores.append((np.mean(pred_scores), np.std(pred_scores)))
 
-    run_vae_pipeline(dataset, model_name)
+    for i in range(len(datasets)):
+        print(f"Dataset: {datasets[i]}")
+        print(f"Discriminative: {final_disc_scores[i]}")
+        print(f"Predictive: {final_pred_scores[i]}")
