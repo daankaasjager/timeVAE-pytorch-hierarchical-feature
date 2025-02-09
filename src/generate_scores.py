@@ -108,16 +108,16 @@ def run_vae_pipeline(dataset_name: str, vae_type: str, n_score_runs: int, n_epoc
 
 
 if __name__ == "__main__":
-    n_runs = 1
+    n_runs = 3
     n_score_runs = 2
-    n_epochs = 2
-    dataset_percentage = 2
+    n_epochs = 1000
+    dataset_percentage = 100
     # check `/data/` for available datasets
-    datasets = [f"sine_subsampled_train_perc_{dataset_percentage}"]
-    # datasets = [f"air_subsampled_train_perc_{dataset_percentage}",
-    #             f"energy_subsampled_train_perc_{dataset_percentage}",
-    #             f"sine_subsampled_train_perc_{dataset_percentage},"
-    #             f"stockv_subsampled_train_perc_{dataset_percentage}"]
+    # datasets = [f"sine_subsampled_train_perc_{dataset_percentage}"]
+    datasets = [f"air_subsampled_train_perc_{dataset_percentage}",
+                f"energy_subsampled_train_perc_{dataset_percentage}",
+                f"sine_subsampled_train_perc_{dataset_percentage},"
+                f"stockv_subsampled_train_perc_{dataset_percentage}"]
 
     # models: vae_dense, vae_conv, timeVAE
     model_name = "timeVAE"
