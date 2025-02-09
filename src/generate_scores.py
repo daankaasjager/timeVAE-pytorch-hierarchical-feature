@@ -110,7 +110,7 @@ def run_vae_pipeline(dataset_name: str, vae_type: str, n_score_runs: int, n_epoc
 if __name__ == "__main__":
     n_runs = 1
     n_score_runs = 2
-    n_epochs = 5
+    n_epochs = 2
     dataset_percentage = 2
     # check `/data/` for available datasets
     datasets = [f"sine_subsampled_train_perc_{dataset_percentage}"]
@@ -146,7 +146,3 @@ if __name__ == "__main__":
         print(f"Discriminative: {final_disc_scores[i]}")
         print(f"Predictive: {final_pred_scores[i]}")
 
-
-
-# Discriminative: (0.4444444444444445, 0.011340230290662867)
-# Predictive: (0.24686216763963065, 0.0073814562312611255)
