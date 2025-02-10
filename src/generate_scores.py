@@ -108,41 +108,49 @@ def run_vae_pipeline(dataset_name: str, vae_type: str, n_score_runs: int, n_epoc
 
 
 if __name__ == "__main__":
-    n_runs = 3
+    n_runs = 1
     n_score_runs = 2
-    n_epochs = 1000
-    dataset_percentage = 100
+    n_epochs = 2
+    dataset_percentages = [2]
     # check `/data/` for available datasets
     # datasets = [f"sine_subsampled_train_perc_{dataset_percentage}"]
-    datasets = [f"air_subsampled_train_perc_{dataset_percentage}",
-                f"energy_subsampled_train_perc_{dataset_percentage}",
-                f"sine_subsampled_train_perc_{dataset_percentage}",
-                f"stockv_subsampled_train_perc_{dataset_percentage}"]
+    datasets = []
+    for dataset_percentage in dataset_percentages:
+        datasets.append(f"air_subsampled_train_perc_{dataset_percentage}")
+        datasets.append(f"stockv_subsampled_train_perc_{dataset_percentage}")
+
+    # datasets = [f"air_subsampled_train_perc_{dataset_percentage}",
+    #             f"energy_subsampled_train_perc_{dataset_percentage}",
+    #             f"sine_subsampled_train_perc_{dataset_percentage}",
+    #             f"stockv_subsampled_train_perc_{dataset_percentage}"]
 
     # models: vae_dense, vae_conv, timeVAE
-    model_name = "timeVAE"
+    model_names = ["timeVAE", "h_timeVAE"]
 
     final_disc_scores = []
     final_pred_scores = []
-    for dataset_name in datasets:
-        disc_scores = []
-        pred_scores = []
-        for run in range(n_runs):
-            print(f"Run {run+1}/{n_runs}, dataset {dataset_name}", flush=True)
-            curr_disc_scores, curr_pred_scores = run_vae_pipeline(dataset_name, model_name, n_score_runs, n_epochs)
-            disc_scores += curr_disc_scores
-            pred_scores += curr_pred_scores
-        print(f"Final Discriminative Score: {np.mean(disc_scores):.4f} ({np.std(disc_scores):.4f})", flush=True)
-        print(f"Final Predictive Score: {np.mean(pred_scores):.4f} ({np.std(pred_scores):.4f})", flush=True)
-        path = os.path.join(paths.SCORES_DIR, dataset_name, model_name)
-        os.makedirs(path, exist_ok=True)
-        np.save(os.path.join(path, "disc_scores.npy"), disc_scores)
-        np.save(os.path.join(path, "pred_scores.npy"), pred_scores)
-        final_disc_scores.append((np.mean(disc_scores), np.std(disc_scores)))
-        final_pred_scores.append((np.mean(pred_scores), np.std(pred_scores)))
+    for model_name in model_names:
+        for dataset_name in datasets:
+            disc_scores = []
+            pred_scores = []
+            for run in range(n_runs):
+                print(f"Run {run+1}/{n_runs}, dataset {dataset_name}, model {model_name}", flush=True)
+                curr_disc_scores, curr_pred_scores = run_vae_pipeline(dataset_name, model_name, n_score_runs, n_epochs)
+                disc_scores += curr_disc_scores
+                pred_scores += curr_pred_scores
+            print(f"Final Discriminative Score: {np.mean(disc_scores):.4f} ({np.std(disc_scores):.4f})", flush=True)
+            print(f"Final Predictive Score: {np.mean(pred_scores):.4f} ({np.std(pred_scores):.4f})", flush=True)
+            path = os.path.join(paths.SCORES_DIR, dataset_name, model_name)
+            os.makedirs(path, exist_ok=True)
+            np.save(os.path.join(path, "disc_scores.npy"), disc_scores)
+            np.save(os.path.join(path, "pred_scores.npy"), pred_scores)
+            final_disc_scores.append((np.mean(disc_scores), np.std(disc_scores)))
+            final_pred_scores.append((np.mean(pred_scores), np.std(pred_scores)))
 
-    for i in range(len(datasets)):
-        print(f"Dataset: {datasets[i]}")
-        print(f"Discriminative: {final_disc_scores[i]}")
-        print(f"Predictive: {final_pred_scores[i]}")
+    for model_name in model_names:
+        print(model_name, flush=True)
+        for i in range(len(datasets)):
+            print(f"Dataset: {datasets[i]}")
+            print(f"Discriminative: {final_disc_scores[i]}")
+            print(f"Predictive: {final_pred_scores[i]}")
 
