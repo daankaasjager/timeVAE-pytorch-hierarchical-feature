@@ -18,11 +18,9 @@ from vae.vae_utils import (
     instantiate_vae_model,
     train_vae,
     save_vae_model,
-    get_posterior_samples,
     get_prior_samples,
-    load_vae_model,
 )
-from visualize import plot_latent_space_samples, visualize_and_save_tsne
+from visualize import visualize_and_save_tsne
 
 
 def run_vae_pipeline(dataset_name: str, vae_type: str, n_score_runs: int, n_epochs: int):
@@ -42,7 +40,14 @@ def run_vae_pipeline(dataset_name: str, vae_type: str, n_score_runs: int, n_epoc
     # Instantiate and train the VAE Model
 
     # load hyperparameters from yaml file
-    hyperparameters = load_yaml_file(paths.HYPERPARAMETERS_FILE_PATH)[vae_type]
+    if dataset_name.startswith("air"):
+        print("Loading air hyperparameters")
+        hyperparameters = load_yaml_file(paths.HYPERPARAMETERS_AIR)[vae_type]
+    elif dataset_name.startswith("stockv"):
+        print("Loading stockv hyperparameters")
+        hyperparameters = load_yaml_file(paths.HYPERPARAMETERS_STOCKV)[vae_type]
+    else:
+        hyperparameters = load_yaml_file(paths.HYPERPARAMETERS_FILE_PATH)[vae_type]
 
     # instantiate the model
     _, sequence_length, feature_dim = scaled_train_data.shape
@@ -109,20 +114,15 @@ def run_vae_pipeline(dataset_name: str, vae_type: str, n_score_runs: int, n_epoc
 
 if __name__ == "__main__":
     n_runs = 1
-    n_score_runs = 2
+    n_score_runs = 1
     n_epochs = 2
     dataset_percentages = [2]
     # check `/data/` for available datasets
-    # datasets = [f"sine_subsampled_train_perc_{dataset_percentage}"]
     datasets = []
     for dataset_percentage in dataset_percentages:
         datasets.append(f"air_subsampled_train_perc_{dataset_percentage}")
         datasets.append(f"stockv_subsampled_train_perc_{dataset_percentage}")
 
-    # datasets = [f"air_subsampled_train_perc_{dataset_percentage}",
-    #             f"energy_subsampled_train_perc_{dataset_percentage}",
-    #             f"sine_subsampled_train_perc_{dataset_percentage}",
-    #             f"stockv_subsampled_train_perc_{dataset_percentage}"]
 
     # models: vae_dense, vae_conv, timeVAE
     model_names = ["timeVAE", "h_timeVAE"]

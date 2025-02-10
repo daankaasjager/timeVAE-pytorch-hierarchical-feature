@@ -57,7 +57,7 @@ def run_vae_pipeline(dataset_name: str, vae_type: str):
     train_vae(
         vae=vae_model,
         train_data=scaled_train_data,
-        max_epochs=1000,
+        max_epochs=200,
         verbose=1,
     )
 
@@ -102,10 +102,12 @@ def run_vae_pipeline(dataset_name: str, vae_type: str):
         max_samples=2000,
     )
 
-    pred_score = predictive_score_metrics(scaled_train_data, prior_samples)
-    print(f"Predictive Score: {pred_score}")
+    print("Computing Discriminative score...")
     disc_score = discriminative_score_metrics(scaled_train_data, prior_samples)
     print(f"Discriminative Score: {disc_score:.4f}")
+    print("Computing Predictive score...")
+    pred_score = predictive_score_metrics(scaled_train_data, prior_samples)
+    print(f"Predictive Score: {pred_score}")
 
     # inverse transformer samples to original scale and save to dir
     inverse_scaled_prior_samples = inverse_transform_data(prior_samples, scaler)
@@ -138,9 +140,9 @@ def run_vae_pipeline(dataset_name: str, vae_type: str):
 
 if __name__ == "__main__":
     # check `/data/` for available datasets
-    dataset = "energy_subsampled_train_perc_2"
+    dataset = "air_subsampled_train_perc_2"
 
     # models: vae_dense, vae_conv, timeVAE
-    model_name = "timeVAE"
+    model_name = "h_timeVAE"
 
     run_vae_pipeline(dataset, model_name)

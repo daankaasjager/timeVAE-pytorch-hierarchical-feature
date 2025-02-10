@@ -62,8 +62,6 @@ def discriminative_score_metrics(ori_data, generated_data):
 
     # Training loop
     for i in range(iterations):
-        if i % 100 == 0:
-            print(f"Training discriminator {i/iterations * 100:.0f}%", end="\r")
         optimizer.zero_grad()
         X_mb, T_mb = batch_generator(train_x.cpu().numpy(), train_t.cpu().numpy(), batch_size)
         X_hat_mb, T_hat_mb = batch_generator(train_x_hat.cpu().numpy(), train_t_hat.cpu().numpy(), batch_size)

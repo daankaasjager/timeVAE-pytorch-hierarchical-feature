@@ -26,7 +26,7 @@ def predictive_score_metrics(ori_data, generated_data):
 
     # Network parameters
     hidden_dim = dim // 2
-    iterations = 5
+    iterations = 2
     batch_size = 128
 
     class Predictor(nn.Module):
