@@ -6,7 +6,7 @@
 #SBATCH --ntasks=1
 #SBATCH --mem=32GB
 #SBATCH --job-name=udl
-#SBATCH --output=udl-split-decoder.out
+#SBATCH --output=udl-interp-last-idx.out
 
 module purge
 module load Python/3.11.5-GCCcore-13.2.0
