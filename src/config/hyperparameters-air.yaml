@@ -17,9 +17,9 @@ h_timeVAE:
   hierarchical_levels: 4
   latent_indexes:
     - 3
-    - 3
-    - 3
-    - 3
+    - 2
+    - 1
+    - 0
 
 timeVAE:
   latent_dim: 8
