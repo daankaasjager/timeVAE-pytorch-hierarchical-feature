@@ -1,12 +1,12 @@
 #!/bin/bash
 
-#SBATCH --time=0-00:30:00
+#SBATCH --time=1-00:00:00
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:1
 #SBATCH --ntasks=1
 #SBATCH --mem=32GB
 #SBATCH --job-name=udl
-#SBATCH --output=udl.out
+#SBATCH --output=udl-tv-base.out
 
 module purge
 module load Python/3.11.5-GCCcore-13.2.0

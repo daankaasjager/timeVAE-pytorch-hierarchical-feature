@@ -23,7 +23,7 @@ from vae.vae_utils import (
 from visualize import visualize_and_save_tsne
 
 
-def run_vae_pipeline(dataset_name: str, vae_type: str, n_score_runs: int, n_epochs: int):
+def run_vae_pipeline(dataset_name: str, vae_type: str, n_score_runs: int, n_epochs: int, interpretable: bool):
     # ----------------------------------------------------------------------------------
     # Load data, perform train/valid split, scale data
 
@@ -40,10 +40,10 @@ def run_vae_pipeline(dataset_name: str, vae_type: str, n_score_runs: int, n_epoc
     # Instantiate and train the VAE Model
 
     # load hyperparameters from yaml file
-    if dataset_name.startswith("air"):
+    if interpretable and dataset_name.startswith("air"):
         print("Loading air hyperparameters")
         hyperparameters = load_yaml_file(paths.HYPERPARAMETERS_AIR)[vae_type]
-    elif dataset_name.startswith("stockv"):
+    elif interpretable and dataset_name.startswith("stockv"):
         print("Loading stockv hyperparameters")
         hyperparameters = load_yaml_file(paths.HYPERPARAMETERS_STOCKV)[vae_type]
     else:
@@ -125,7 +125,8 @@ if __name__ == "__main__":
         datasets.append(f"stockv_subsampled_train_perc_{dataset_percentage}")
 
     # models: vae_dense, vae_conv, timeVAE
-    model_names = ["timeVAE", "h_timeVAE"]
+    model_names = ["timeVAE"]
+    interpretable = False
 
     final_disc_scores = []
     final_pred_scores = []
@@ -135,7 +136,7 @@ if __name__ == "__main__":
             pred_scores = []
             for run in range(n_runs):
                 print(f"Run {run+1}/{n_runs}, dataset {dataset_name}, model {model_name}", flush=True)
-                curr_disc_scores, curr_pred_scores = run_vae_pipeline(dataset_name, model_name, n_score_runs, n_epochs)
+                curr_disc_scores, curr_pred_scores = run_vae_pipeline(dataset_name, model_name, n_score_runs, n_epochs, interpretable)
                 disc_scores += curr_disc_scores
                 pred_scores += curr_pred_scores
             print(f"Final Discriminative Score: {np.mean(disc_scores):.4f} ({np.std(disc_scores):.4f})", flush=True)
