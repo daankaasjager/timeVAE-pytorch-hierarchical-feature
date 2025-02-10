@@ -1,5 +1,5 @@
 numpy==2.2.2
-torch==2.4.0+cu124
+torch
 matplotlib==3.10.0
 pandas==2.2.3
 PyYAML==6.0.2
