@@ -116,7 +116,7 @@ if __name__ == "__main__":
     # datasets = [f"sine_subsampled_train_perc_{dataset_percentage}"]
     datasets = [f"air_subsampled_train_perc_{dataset_percentage}",
                 f"energy_subsampled_train_perc_{dataset_percentage}",
-                f"sine_subsampled_train_perc_{dataset_percentage},"
+                f"sine_subsampled_train_perc_{dataset_percentage}",
                 f"stockv_subsampled_train_perc_{dataset_percentage}"]
 
     # models: vae_dense, vae_conv, timeVAE
