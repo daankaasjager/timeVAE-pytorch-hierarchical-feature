@@ -1,9 +1,6 @@
-distributions==2.2.1
-joblib==1.4.2
-matplotlib==3.10.0
 numpy==2.2.2
+torch==2.4.0+cu124
+matplotlib==3.10.0
 pandas==2.2.3
-PyYAML==6.0.1
 PyYAML==6.0.2
 scikit_learn==1.6.1
-torch==2.4.0+cu124
