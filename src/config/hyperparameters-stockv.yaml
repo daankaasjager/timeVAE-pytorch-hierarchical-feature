@@ -14,6 +14,11 @@ h_timeVAE:
     - [7, 1]
   layers_per_conv_block: 1
   hierarchical_levels: 4
+  latent_indexes:
+    - 3
+    - 3
+    - 3
+    - 3
 
 timeVAE:
   latent_dim: 8

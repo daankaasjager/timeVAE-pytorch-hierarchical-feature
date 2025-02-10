@@ -28,7 +28,7 @@ def discriminative_score_metrics(ori_data, generated_data):
 
     # Network parameters
     hidden_dim = int(dim / 2)
-    iterations = 2
+    iterations = 2000
     batch_size = 128
 
     class Discriminator(nn.Module):

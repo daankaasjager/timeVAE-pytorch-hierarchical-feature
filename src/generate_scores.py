@@ -47,6 +47,7 @@ def run_vae_pipeline(dataset_name: str, vae_type: str, n_score_runs: int, n_epoc
         print("Loading stockv hyperparameters")
         hyperparameters = load_yaml_file(paths.HYPERPARAMETERS_STOCKV)[vae_type]
     else:
+        print("Loading default hyperparameters")
         hyperparameters = load_yaml_file(paths.HYPERPARAMETERS_FILE_PATH)[vae_type]
 
     # instantiate the model
@@ -113,16 +114,15 @@ def run_vae_pipeline(dataset_name: str, vae_type: str, n_score_runs: int, n_epoc
 
 
 if __name__ == "__main__":
-    n_runs = 1
-    n_score_runs = 1
-    n_epochs = 2
-    dataset_percentages = [2]
+    n_runs = 3
+    n_score_runs = 2
+    n_epochs = 1000
+    dataset_percentages = [2, 20]
     # check `/data/` for available datasets
     datasets = []
     for dataset_percentage in dataset_percentages:
         datasets.append(f"air_subsampled_train_perc_{dataset_percentage}")
         datasets.append(f"stockv_subsampled_train_perc_{dataset_percentage}")
-
 
     # models: vae_dense, vae_conv, timeVAE
     model_names = ["timeVAE", "h_timeVAE"]

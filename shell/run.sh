@@ -6,7 +6,7 @@
 #SBATCH --ntasks=1
 #SBATCH --mem=32GB
 #SBATCH --job-name=udl
-#SBATCH --output=udl.out
+#SBATCH --output=interpretable1.out
 
 module purge
 module load Python/3.11.5-GCCcore-13.2.0

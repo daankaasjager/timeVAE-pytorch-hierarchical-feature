@@ -238,7 +238,7 @@ class HTimeVAEEncoder(nn.Module):
 
 
 class HTimeVAEDecoder(nn.Module):
-    def __init__(self, seq_len, feat_dim, hidden_layer_sizes, latent_dim, trend_poly=0, custom_seas=None, use_residual_conn=True, encoder_last_dense_dim=None):
+    def __init__(self, seq_len, feat_dim, hidden_layer_sizes, latent_dim, latent_indexes, trend_poly=0, custom_seas=None, use_residual_conn=True, encoder_last_dense_dim=None):
         super(HTimeVAEDecoder, self).__init__()
         self.seq_len = seq_len
         self.feat_dim = feat_dim
@@ -246,6 +246,7 @@ class HTimeVAEDecoder(nn.Module):
         self.trend_poly = trend_poly
         self.custom_seas = custom_seas
         self.use_residual_conn = use_residual_conn
+        self.latent_indexes = latent_indexes
 
         self.level_model = LevelModel(self.latent_dim, self.feat_dim, self.seq_len)
 
@@ -263,19 +264,20 @@ class HTimeVAEDecoder(nn.Module):
             self.residual_conn = ResidualConnection(seq_len, feat_dim, hidden_layer_sizes, latent_dim, encoder_last_dense_dim)
 
     def forward(self, z):
-        outputs = self.level_model(z[3])
+        print(self.latent_indexes)
+        outputs = self.level_model(z[self.latent_indexes[0]])
 
         if self.trend_layer is not None:
-            trend_vals = self.trend_layer(z[3].to(next(self.trend_layer.parameters()).device))
+            trend_vals = self.trend_layer(z[self.latent_indexes[1]].to(next(self.trend_layer.parameters()).device))
             outputs += trend_vals
 
         if self.seasonal_layer is not None:
-            seasonal_vals = self.seasonal_layer(z[3].to(next(self.seasonal_layer.parameters()).device))
+            seasonal_vals = self.seasonal_layer(z[self.latent_indexes[2]].to(next(self.seasonal_layer.parameters()).device))
             outputs += seasonal_vals
 
 
         if self.use_residual_conn:
-            residuals = self.residual_conn(z[3])
+            residuals = self.residual_conn(z[self.latent_indexes[3]])
             outputs += residuals
 
         return outputs
@@ -293,18 +295,22 @@ class HTimeVAE(BaseVariationalAutoencoder):
         use_residual_conn=True,
         layers_per_conv_block=None,
         hierarchical_levels=None,
+        latent_indexes=None,
         **kwargs,
     ):
         super(HTimeVAE, self).__init__(**kwargs)
 
         if hidden_layer_sizes is None:
             hidden_layer_sizes = [15, 30, 60, 90, 120, 150, 180, 210, 240]
+        if latent_indexes is None:
+            latent_indexes = [3, 3, 3, 3]
         self.layers_per_conv_block = layers_per_conv_block
         self.hidden_layer_sizes = hidden_layer_sizes
         self.hierarchical_levels = hierarchical_levels
         self.trend_poly = trend_poly
         self.custom_seas = custom_seas
         self.use_residual_conn = use_residual_conn
+        self.latent_indexes = latent_indexes
 
         self.encoder = self._get_encoder()
         self.decoder = self._get_decoder()
@@ -319,7 +325,7 @@ class HTimeVAE(BaseVariationalAutoencoder):
         return HTimeVAEEncoder(self.seq_len, self.feat_dim, self.hidden_layer_sizes, self.layers_per_conv_block, self.latent_dim, self.hierarchical_levels)
 
     def _get_decoder(self):
-        return HTimeVAEDecoder(self.seq_len, self.feat_dim, self.hidden_layer_sizes, self.latent_dim, self.trend_poly, self.custom_seas, self.use_residual_conn, self.encoder.encoder_last_dense_dims[-1])
+        return HTimeVAEDecoder(self.seq_len, self.feat_dim, self.hidden_layer_sizes, self.latent_dim, self.latent_indexes, self.trend_poly, self.custom_seas, self.use_residual_conn, self.encoder.encoder_last_dense_dims[-1])
 
     def get_prior_samples(self, num_samples):
         device = next(self.parameters()).device
