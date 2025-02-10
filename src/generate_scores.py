@@ -125,8 +125,8 @@ if __name__ == "__main__":
         datasets.append(f"stockv_subsampled_train_perc_{dataset_percentage}")
 
     # models: vae_dense, vae_conv, timeVAE
-    model_names = ["timeVAE"]
-    interpretable = False
+    model_names = ["timeVAE", "h_timeVAE"]
+    interpretable = True
 
     final_disc_scores = []
     final_pred_scores = []
