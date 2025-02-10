@@ -151,6 +151,6 @@ if __name__ == "__main__":
         print(model_name, flush=True)
         for i in range(len(datasets)):
             print(f"Dataset: {datasets[i]}")
-            print(f"Discriminative: {final_disc_scores[i]}")
-            print(f"Predictive: {final_pred_scores[i]}")
+            print(f"Discriminative: {final_disc_scores[i][0]:.4f} ({final_disc_scores[i][1]:.4f})")
+            print(f"Predictive: {final_pred_scores[i][0]:.4f} ({final_pred_scores[i][1]:.4f})")
 
