@@ -264,7 +264,6 @@ class HTimeVAEDecoder(nn.Module):
             self.residual_conn = ResidualConnection(seq_len, feat_dim, hidden_layer_sizes, latent_dim, encoder_last_dense_dim)
 
     def forward(self, z):
-        print(self.latent_indexes)
         outputs = self.level_model(z[self.latent_indexes[0]])
 
         if self.trend_layer is not None:
