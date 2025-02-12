@@ -127,10 +127,11 @@ if __name__ == "__main__":
     # models: vae_dense, vae_conv, timeVAE
     model_names = ["timeVAE", "h_timeVAE"]
     interpretable = True
-
-    final_disc_scores = []
-    final_pred_scores = []
+    model_disc_scores = []
+    model_pred_scores = []
     for model_name in model_names:
+        final_disc_scores = []
+        final_pred_scores = []
         for dataset_name in datasets:
             disc_scores = []
             pred_scores = []
@@ -147,9 +148,13 @@ if __name__ == "__main__":
             np.save(os.path.join(path, "pred_scores.npy"), pred_scores)
             final_disc_scores.append((np.mean(disc_scores), np.std(disc_scores)))
             final_pred_scores.append((np.mean(pred_scores), np.std(pred_scores)))
+        model_disc_scores.append(final_disc_scores)
+        model_pred_scores.append(final_pred_scores)
 
-    for model_name in model_names:
-        print(model_name, flush=True)
+    for j in range(len(model_disc_scores)):
+        final_disc_scores = model_disc_scores[j]
+        final_pred_scores = model_pred_scores[j]
+        print(model_names[j], flush=True)
         for i in range(len(datasets)):
             print(f"Dataset: {datasets[i]}")
             print(f"Discriminative: {final_disc_scores[i][0]:.4f} ({final_disc_scores[i][1]:.4f})")
