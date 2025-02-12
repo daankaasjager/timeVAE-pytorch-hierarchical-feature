@@ -171,13 +171,9 @@ class HTimeVAEEncoder(nn.Module):
         self.encoder_last_dense_dims = self._get_last_dense_dim(seq_len, feat_dim)
         # Instead of concatenating previous latent variables, add them (after a learned transform).
         # For the first level, use an identity.
-        self.residual_transforms = nn.ModuleList()
+        self.projected_skip_connections = nn.ModuleList()
         for i in range(hierarchical_levels):
-            # if i == 0:
-            #     self.residual_transforms.append(nn.Identity())
-            # else:
-                # Map the previous latent (of dimension latent_dim) to match the flattened conv output.
-            self.residual_transforms.append(
+            self.projected_skip_connections.append(
                 nn.Linear(self.latent_dim, self.encoder_last_dense_dims[i])
             )
 
@@ -225,8 +221,8 @@ class HTimeVAEEncoder(nn.Module):
         for i in reversed(range(self.hierarchical_levels)):
             dense_input = self.flatten(conv_outputs[i])
             if i != self.hierarchical_levels - 1:
-                # Instead of concatenation, add a transformed version of the previous latent.
-                residual = self.residual_transforms[i](z_list[self.hierarchical_levels - i - 2])
+                # Add a transformed version of the previous latent.
+                residual = self.projected_skip_connections[i](z_list[self.hierarchical_levels - i - 2])
                 dense_input = dense_input + residual
 
             z_mean = self.z_mean_layers[i](dense_input)
@@ -332,7 +328,7 @@ class HTimeVAE(BaseVariationalAutoencoder):
         z_list.append(torch.randn(num_samples, self.latent_dim).to(device))
         for i in reversed(range(self.hierarchical_levels - 1)):
             prev_z = z_list[self.hierarchical_levels - i - 2]
-            z_input = self.encoder.residual_transforms[i](prev_z)
+            z_input = self.encoder.projected_skip_connections[i](prev_z)
             z_mean = self.encoder.z_mean_layers[i](z_input)
             z_log_var = self.encoder.z_log_var_layers[i](z_input)
             z_list.append(Sampling()([z_mean, z_log_var]))
