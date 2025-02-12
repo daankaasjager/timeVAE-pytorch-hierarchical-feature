@@ -4,10 +4,7 @@ from typing import Union, List, Optional
 import torch
 import numpy as np
 
-from vae.vae_dense_model import VariationalAutoencoderDense as VAE_Dense
-from vae.vae_conv_model import VariationalAutoencoderConv as VAE_Conv
 from vae.timevae import TimeVAE
-
 from vae.h_timevae import HTimeVAE
 
 
@@ -30,7 +27,7 @@ def set_seeds(seed: int = 111) -> None:
 
 def instantiate_vae_model(
     vae_type: str, sequence_length: int, feature_dim: int, batch_size: int, **kwargs
-) -> Union[VAE_Dense, VAE_Conv, TimeVAE]:
+) -> Union[TimeVAE]:
     """
     Instantiate a Variational Autoencoder (VAE) model based on the specified type.
 
@@ -49,21 +46,7 @@ def instantiate_vae_model(
     """
     set_seeds(seed=123)
 
-    if vae_type == "vae_dense":
-        vae = VAE_Dense(
-            seq_len=sequence_length,
-            feat_dim=feature_dim,
-            batch_size=batch_size,
-            **kwargs,
-        )
-    elif vae_type == "vae_conv":
-        vae = VAE_Conv(
-            seq_len=sequence_length,
-            feat_dim=feature_dim,
-            batch_size=batch_size,
-            **kwargs,
-        )
-    elif vae_type == "timeVAE":
+    if vae_type == "timeVAE":
         vae = TimeVAE(
             seq_len=sequence_length,
             feat_dim=feature_dim,
@@ -113,7 +96,7 @@ def save_vae_model(vae, dir_path: str) -> None:
     vae.save(dir_path)
 
 
-def load_vae_model(vae_type: str, dir_path: str, hyperparameters) -> Union[VAE_Dense, VAE_Conv, TimeVAE, HTimeVAE]:
+def load_vae_model(vae_type: str, dir_path: str, hyperparameters) -> Union[TimeVAE, HTimeVAE]:
     """
     Load a VAE model from the specified directory.
 

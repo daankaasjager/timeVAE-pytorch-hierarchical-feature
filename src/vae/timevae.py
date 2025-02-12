@@ -287,5 +287,6 @@ class TimeVAE(BaseVariationalAutoencoder):
         params_file = os.path.join(model_dir, f"{cls.model_name}_parameters.pkl")
         dict_params = joblib.load(params_file)
         vae_model = TimeVAE(**dict_params)
-        vae_model.load_state_dict(torch.load(os.path.join(model_dir, f"{cls.model_name}_weights.pth")))
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        vae_model.load_state_dict(torch.load(os.path.join(model_dir, f"{cls.model_name}_weights.pth"), map_location=device))
         return vae_model

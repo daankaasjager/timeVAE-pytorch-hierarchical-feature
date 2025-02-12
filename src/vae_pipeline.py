@@ -33,7 +33,7 @@ def run_vae_pipeline(dataset_name: str, vae_type: str):
     data = load_data(data_dir=paths.DATASETS_DIR, dataset=dataset_name)
 
     # split data into train/valid splits
-    train_data, valid_data = split_data(data, valid_perc=0.1, shuffle=True)
+    train_data, valid_data = split_data(data, valid_perc=0.0, shuffle=True)
 
     # scale data
     scaled_train_data, scaled_valid_data, scaler = scale_data(train_data, valid_data)
@@ -142,7 +142,7 @@ if __name__ == "__main__":
     # check `/data/` for available datasets
     dataset = "air_subsampled_train_perc_2"
 
-    # models: vae_dense, vae_conv, timeVAE
+    # models: h_timeVAE, timeVAE
     model_name = "h_timeVAE"
 
     run_vae_pipeline(dataset, model_name)
