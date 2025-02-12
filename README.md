@@ -34,7 +34,7 @@ pip install -r requirements.txt
    - Update the dataset name and model type in `./src/vae_pipeline.py`:
      ```python
      dataset = "my_data"  # Your dataset name
-     model_name = "timeVAE"  # Choose between vae_dense, vae_conv, or timeVAE
+     model_name = "timeVAE"  # Choose between h_timeVAE or timeVAE
      ```
    - Set hyperparameters in `./src/config/hyperparameters.yaml`. Key hyperparameters include `latent_dim`, `hidden_layer_sizes`, `reconstruction_wt`, and `batch_size`.
 
