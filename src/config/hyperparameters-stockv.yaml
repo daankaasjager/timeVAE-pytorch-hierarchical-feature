@@ -11,8 +11,7 @@ h_timeVAE:
   use_residual_conn: true
   trend_poly: 6
   custom_seas:
-    - [24, 1]
-    - [7, 24]
+    - [7, 1]
   layers_per_conv_block: 1
   hierarchical_levels: 4
   latent_indexes:
@@ -30,6 +29,7 @@ timeVAE:
   reconstruction_wt: 3.0
   batch_size: 16
   use_residual_conn: true
-  trend_poly: 0
-  custom_seas: null
+  trend_poly: 6
+  custom_seas:
+    - [7, 1]
 

@@ -4,9 +4,8 @@ from typing import Union, List, Optional
 import torch
 import numpy as np
 
-from vae.vae_dense_model import VariationalAutoencoderDense as VAE_Dense
-from vae.vae_conv_model import VariationalAutoencoderConv as VAE_Conv
 from vae.timevae import TimeVAE
+from vae.h_timevae import HTimeVAE
 
 
 def set_seeds(seed: int = 111) -> None:
@@ -28,41 +27,34 @@ def set_seeds(seed: int = 111) -> None:
 
 def instantiate_vae_model(
     vae_type: str, sequence_length: int, feature_dim: int, batch_size: int, **kwargs
-) -> Union[VAE_Dense, VAE_Conv, TimeVAE]:
+) -> Union[TimeVAE]:
     """
     Instantiate a Variational Autoencoder (VAE) model based on the specified type.
 
     Args:
         vae_type (str): The type of VAE model to instantiate.
-                        One of ('vae_dense', 'vae_conv', 'timeVAE').
+                        One of ('h_timeVAE', 'timeVAE').
         sequence_length (int): The sequence length.
         feature_dim (int): The feature dimension.
         batch_size (int): Batch size for training.
 
     Returns:
-        Union[VAE_Dense, VAE_Conv, TimeVAE]: The instantiated VAE model.
+        Union[HTimeVAE TimeVAE]: The instantiated VAE model.
 
     Raises:
         ValueError: If an unrecognized VAE type is provided.
     """
     set_seeds(seed=123)
 
-    if vae_type == "vae_dense":
-        vae = VAE_Dense(
-            seq_len=sequence_length,
-            feat_dim=feature_dim,
-            batch_size=batch_size,
-            **kwargs,
-        )
-    elif vae_type == "vae_conv":
-        vae = VAE_Conv(
-            seq_len=sequence_length,
-            feat_dim=feature_dim,
-            batch_size=batch_size,
-            **kwargs,
-        )
-    elif vae_type == "timeVAE":
+    if vae_type == "timeVAE":
         vae = TimeVAE(
+            seq_len=sequence_length,
+            feat_dim=feature_dim,
+            batch_size=batch_size,
+            **kwargs,
+        )
+    elif vae_type == "h_timeVAE":
+        vae = HTimeVAE(
             seq_len=sequence_length,
             feat_dim=feature_dim,
             batch_size=batch_size,
@@ -71,7 +63,7 @@ def instantiate_vae_model(
     else:
         raise ValueError(
             f"Unrecognized model type [{vae_type}]. "
-            "Please choose from vae_dense, vae_conv, timeVAE."
+            "Please choose from timeVAE, h_timeVAE."
         )
 
     return vae
@@ -82,7 +74,7 @@ def train_vae(vae, train_data, max_epochs, verbose=0):
     Train a VAE model.
 
     Args:
-        vae (Union[VAE_Dense, VAE_Conv, TimeVAE]): The VAE model to train.
+        vae (Union[HTimeVAE, TimeVAE]): The VAE model to train.
         train_data (np.ndarray): The training data which must be of shape
                                  [num_samples, window_len, feature_dim].
         max_epochs (int, optional): The maximum number of epochs to train
@@ -98,34 +90,33 @@ def save_vae_model(vae, dir_path: str) -> None:
     Save the weights of a VAE model.
 
     Args:
-        vae (Union[VAE_Dense, VAE_Conv, TimeVAE]): The VAE model to save.
+        vae (Union[HTimeVAE TimeVAE]): The VAE model to save.
         dir_path (str): The directory to save the model weights.
     """
     vae.save(dir_path)
 
 
-def load_vae_model(vae_type: str, dir_path: str) -> Union[VAE_Dense, VAE_Conv, TimeVAE]:
+def load_vae_model(vae_type: str, dir_path: str, hyperparameters) -> Union[TimeVAE, HTimeVAE]:
     """
     Load a VAE model from the specified directory.
 
     Args:
         vae_type (str): The type of VAE model to load.
-                        One of ('vae_dense', 'vae_conv', 'timeVAE').
+                        One of ('h_timeVAE', 'timeVAE').
         dir_path (str): The directory containing the model weights.
+        hyperparameters: the hyperparameters of the VAE model.
 
     Returns:
-        Union[VAE_Dense, VAE_Conv, TimeVAE]: The loaded VAE model.
+        Union[TimeVAE, HTimeVAE]: The loaded VAE model.
     """
-    if vae_type == "vae_dense":
-        vae = VAE_Dense.load(dir_path)
-    elif vae_type == "vae_conv":
-        vae = VAE_Conv.load(dir_path)
-    elif vae_type == "timeVAE":
+    if vae_type == "timeVAE":
         vae = TimeVAE.load(dir_path)
+    elif vae_type == "h_timeVAE":
+        vae = HTimeVAE.load(dir_path)
     else:
         raise ValueError(
             f"Unrecognized model type [{vae_type}]. "
-            "Please choose from vae_dense, vae_conv, timeVAE."
+            "Please choose from timeVAE, h_timeVAE."
         )
 
     return vae
@@ -136,7 +127,7 @@ def get_posterior_samples(vae, data):
     Get posterior samples from the VAE model.
 
     Args:
-        vae (Union[VAE_Dense, VAE_Conv, TimeVAE]): The trained VAE model.
+        vae (Union[HTimeVAE, TimeVAE]): The trained VAE model.
         data (np.ndarray): The data to generate posterior samples from.
 
     Returns:
@@ -150,7 +141,7 @@ def get_prior_samples(vae, num_samples: int):
     Get prior samples from the VAE model.
 
     Args:
-        vae (Union[VAE_Dense, VAE_Conv, TimeVAE]): The trained VAE model.
+        vae (Union[HTimeVAE TimeVAE]): The trained VAE model.
         num_samples (int): The number of samples to generate.
 
     Returns:

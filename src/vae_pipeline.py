@@ -12,6 +12,8 @@ from data_utils import (
     save_scaler,
     save_data,
 )
+from metrics.pt_discriminative_metrics import discriminative_score_metrics
+from metrics.pt_predictive_metrics import predictive_score_metrics
 from vae.vae_utils import (
     instantiate_vae_model,
     train_vae,
@@ -31,7 +33,7 @@ def run_vae_pipeline(dataset_name: str, vae_type: str):
     data = load_data(data_dir=paths.DATASETS_DIR, dataset=dataset_name)
 
     # split data into train/valid splits
-    train_data, valid_data = split_data(data, valid_perc=0.1, shuffle=True)
+    train_data, valid_data = split_data(data, valid_perc=0.0, shuffle=True)
 
     # scale data
     scaled_train_data, scaled_valid_data, scaler = scale_data(train_data, valid_data)
@@ -100,6 +102,13 @@ def run_vae_pipeline(dataset_name: str, vae_type: str):
         max_samples=2000,
     )
 
+    print("Computing Discriminative score...")
+    disc_score = discriminative_score_metrics(scaled_train_data, prior_samples)
+    print(f"Discriminative Score: {disc_score:.4f}")
+    print("Computing Predictive score...")
+    pred_score = predictive_score_metrics(scaled_train_data, prior_samples)
+    print(f"Predictive Score: {pred_score}")
+
     # inverse transformer samples to original scale and save to dir
     inverse_scaled_prior_samples = inverse_transform_data(prior_samples, scaler)
     save_data(
@@ -117,7 +126,7 @@ def run_vae_pipeline(dataset_name: str, vae_type: str):
 
     # ----------------------------------------------------------------------------------
     # later.... load model
-    loaded_model = load_vae_model(vae_type, model_save_dir).to(next(vae_model.parameters()).device)
+    loaded_model = load_vae_model(vae_type, model_save_dir, hyperparameters).to(next(vae_model.parameters()).device)
 
     # Verify that loaded model produces same posterior samples
     new_x_decoded = loaded_model.predict(scaled_train_data)
@@ -131,9 +140,9 @@ def run_vae_pipeline(dataset_name: str, vae_type: str):
 
 if __name__ == "__main__":
     # check `/data/` for available datasets
-    dataset = "sine_subsampled_train_perc_20"
+    dataset = "air_subsampled_train_perc_2"
 
-    # models: vae_dense, vae_conv, timeVAE
-    model_name = "vae_conv"
+    # models: h_timeVAE, timeVAE
+    model_name = "h_timeVAE"
 
     run_vae_pipeline(dataset, model_name)

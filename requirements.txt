@@ -1,8 +1,8 @@
---extra-index-url https://download.pytorch.org/whl/cu124
-
+joblib==1.4.2
+matplotlib==3.10.0
+numpy==2.2.2
+pandas==2.2.3
+PyYAML==6.0.1
+PyYAML==6.0.2
+scikit_learn==1.6.1
 torch==2.4.0
-pandas==1.3.4
-numpy==1.26.4
-scikit-learn==1.5.0
-matplotlib==3.7.2
-pyyaml==6.0.1

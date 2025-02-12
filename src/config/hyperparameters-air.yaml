@@ -30,6 +30,8 @@ timeVAE:
   reconstruction_wt: 3.0
   batch_size: 16
   use_residual_conn: true
-  trend_poly: 0
-  custom_seas: null
+  trend_poly: 6
+  custom_seas:
+    - [24, 1]
+    - [7, 24]
 
