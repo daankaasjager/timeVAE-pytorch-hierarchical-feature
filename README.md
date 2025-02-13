@@ -1,5 +1,9 @@
 Repository for Daan Kaasjager and Roben de Lange's Unsupervised Deep Learning project.
 
+Reuses code from: [timeVAE-pytorch](https://github.com/wangyz1999/timeVAE-pytorch?tab=readme-ov-file).
+
+Expands on ideas presented in [TimeVAE: A Variational Auto-Encoder for Multivariate Time Series Generation](https://arxiv.org/abs/2111.08095) and [NVAE: A Deep Hierarchical Variational Autoencoder](https://proceedings.neurips.cc/paper/2020/hash/e3b21256183cf7c2c7a66be163579d37-Abstract.html).
+
 ## Installation
 
 Create a virtual environment and install dependencies:
